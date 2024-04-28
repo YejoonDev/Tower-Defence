@@ -70,3 +70,8 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# ect
+/[Aa]ssets/Cube_World/
+/[Aa]ssets/RPGMonsterBundlePBR/
+/[Aa]ssets/BattleRoyaleHeroesPBR/
