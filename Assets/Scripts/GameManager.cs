@@ -17,15 +17,11 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     public void SpawnRandomTower(Vector3 spawnPos)
     {
         int randIdx = Random.Range(0, towersToBuild.Count);
+        CapsuleCollider unitCollider = towersToBuild[randIdx].GetComponent<CapsuleCollider>();
+        // spawnPos = new Vector3(spawnPos.x, spawnPos.y, spawnPos.y);
         Instantiate(towersToBuild[randIdx], spawnPos, towersToBuild[randIdx].transform.rotation);
     }
 }
