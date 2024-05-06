@@ -23,7 +23,7 @@ public class Block : MonoBehaviour
 
     void SpawnTowerUnit()
     {
-        GameManager.instance.SpawnRandomTower(_spawnPos.position);
+        GameManager.Instance.SpawnRandomTower(_spawnPos.position);
         _isExisted = true;
     }
 }
