@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
     public List<GameObject> towersToBuild;
     public List<GameObject> enemies;
-    public Vector3 enemySpawnPos;
+    public Transform enemySpawnPos;
     public List<GameObject> trackedEnemies = new List<GameObject>();
     public int enemyLimitCount = 10;
     public int currentEnemyLevel;
@@ -48,7 +48,7 @@ public class GameManager : MonoBehaviour
     {
         for (int i = 0; i < enemyLimitCount; i++)
         {
-            GameObject obj = Instantiate(enemies[idx].gameObject, enemySpawnPos, 
+            GameObject obj = Instantiate(enemies[idx].gameObject, enemySpawnPos.position, 
                 enemies[idx].gameObject.transform.rotation);
             trackedEnemies.Add(obj);
             yield return new WaitForSeconds(2.0f);

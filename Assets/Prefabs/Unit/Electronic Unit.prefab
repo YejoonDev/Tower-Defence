@@ -2001,7 +2001,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ca5f6a5e5e9be6428cc4d56fb634438, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  projectilePrefab: {fileID: 1254724754748870, guid: ead2eb1ec6d8ee54fa5d36c7f5e30eef, type: 3}
+  projectilePrefab: {fileID: 1759596753954018, guid: 19d8c4123e944c14ea1a372febe7ad91, type: 3}
   MuzzleTransform: {fileID: 212309707178806892}
 --- !u!1 &2986429891400408645
 GameObject:

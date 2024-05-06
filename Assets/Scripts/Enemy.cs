@@ -23,7 +23,11 @@ public class Enemy : MonoBehaviour
         if (_destIdx < _destinations.Count - 1)
             MoveToDestination();
         transform.Translate(_speed * Time.deltaTime * Vector3.forward);
-        
+
+        if (transform.position.z < -6.5f)
+        {
+            Destroy(gameObject);
+        }
     }
 
     void GetDestinations()

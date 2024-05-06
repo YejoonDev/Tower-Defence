@@ -1579,6 +1579,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6286310687457461108}
   - component: {fileID: 6153708090028952661}
+  - component: {fileID: 3856273666107695516}
   m_Layer: 0
   m_Name: Fire Unit
   m_TagString: Untagged
@@ -1640,6 +1641,7 @@ Transform:
   - {fileID: 8736447608881954675}
   - {fileID: 4069015158131991783}
   - {fileID: 3271491970620891322}
+  - {fileID: 7113725401716103966}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &6153708090028952661
@@ -1663,6 +1665,19 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &3856273666107695516
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2295546823961869197}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ca5f6a5e5e9be6428cc4d56fb634438, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  projectilePrefab: {fileID: 1254724754748870, guid: 67918ca5206cc9f4db8f60ac51840819, type: 3}
 --- !u!1 &2381965923723212558
 GameObject:
   m_ObjectHideFlags: 0
@@ -1821,6 +1836,37 @@ SkinnedMeshRenderer:
     m_Center: {x: -0.0062411427, y: -0.013890296, z: 1.2690101}
     m_Extent: {x: 0.41955596, y: 0.4166621, z: 0.49634004}
   m_DirtyAABB: 0
+--- !u!1 &2532006733283386079
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7113725401716103966}
+  m_Layer: 0
+  m_Name: Muzzle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7113725401716103966
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2532006733283386079}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.88, z: 0.17}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6286310687457461108}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2658914859410873084
 GameObject:
   m_ObjectHideFlags: 0

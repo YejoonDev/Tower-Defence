@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -18,9 +19,14 @@ public class HS_ProjectileMover : MonoBehaviour
     [SerializeField] protected ParticleSystem projectilePS;
     private bool startChecker = false;
     [SerializeField]protected bool notDestroy = false;
-
+    private GameObject _target;
+    private Vector3 _targetVector;
+    
     protected virtual void Start()
     {
+        _target = GameManager.Instance.trackedEnemies[0];
+        _targetVector = new Vector3(_target.transform.position.x, 1,
+            _target.transform.position.z);
         if (!startChecker)
         {
             /*lightSourse = GetComponent<Light>();
@@ -34,7 +40,7 @@ public class HS_ProjectileMover : MonoBehaviour
             }
         }
         if (notDestroy)
-            StartCoroutine(DisableTimer(5));
+            StartCoroutine(DisableTimer(5f));
         else
             Destroy(gameObject, 5);
         startChecker = true;
@@ -65,58 +71,68 @@ public class HS_ProjectileMover : MonoBehaviour
 
     protected virtual void FixedUpdate()
     {
+        Vector3 direction = (_targetVector - transform.position).normalized;
         if (speed != 0)
         {
-            rb.velocity = transform.forward * speed;      
+            rb.velocity = direction * speed;      
         }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        
     }
 
     //https ://docs.unity3d.com/ScriptReference/Rigidbody.OnCollisionEnter.html
     protected virtual void OnCollisionEnter(Collision collision)
     {
-        //Lock all axes movement and rotation
-        rb.constraints = RigidbodyConstraints.FreezeAll;
-        //speed = 0;
-        if (lightSourse != null)
-            lightSourse.enabled = false;
-        col.enabled = false;
-        projectilePS.Stop();
-        projectilePS.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-
-        ContactPoint contact = collision.contacts[0];
-        Quaternion rot = Quaternion.FromToRotation(Vector3.up, contact.normal);
-        Vector3 pos = contact.point + contact.normal * hitOffset;
-
-        //Spawn hit effect on collision
-        if (hit != null)
+        if (collision.gameObject.CompareTag("Enemy"))
         {
-            hit.transform.rotation = rot;
-            hit.transform.position = pos;
-            if (UseFirePointRotation) { hit.transform.rotation = gameObject.transform.rotation * Quaternion.Euler(0, 180f, 0); }
-            else if (rotationOffset != Vector3.zero) { hit.transform.rotation = Quaternion.Euler(rotationOffset); }
-            else { hit.transform.LookAt(contact.point + contact.normal); }
-            hitPS.Play();
-        }
+            //Lock all axes movement and rotation
+            rb.constraints = RigidbodyConstraints.FreezeAll;
+            //speed = 0;
+            if (lightSourse != null)
+                lightSourse.enabled = false;
+            col.enabled = false;
+            projectilePS.Stop();
+            projectilePS.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
-        //Removing trail from the projectile on cillision enter or smooth removing. Detached elements must have "AutoDestroying script"
-        foreach (var detachedPrefab in Detached)
-        {
-            if (detachedPrefab != null)
+            ContactPoint contact = collision.contacts[0];
+            Quaternion rot = Quaternion.FromToRotation(Vector3.up, contact.normal);
+            Vector3 pos = contact.point + contact.normal * hitOffset;
+
+            //Spawn hit effect on collision
+            if (hit != null)
             {
-                ParticleSystem detachedPS = detachedPrefab.GetComponent<ParticleSystem>();
-                detachedPS.Stop();
+                hit.transform.rotation = rot;
+                hit.transform.position = pos;
+                if (UseFirePointRotation) { hit.transform.rotation = gameObject.transform.rotation * Quaternion.Euler(0, 180f, 0); }
+                else if (rotationOffset != Vector3.zero) { hit.transform.rotation = Quaternion.Euler(rotationOffset); }
+                else { hit.transform.LookAt(contact.point + contact.normal); }
+                hitPS.Play();
             }
-        }
-        if (notDestroy)
-            StartCoroutine(DisableTimer(hitPS.main.duration));
-        else
-        {
-            if (hitPS != null)
+
+            //Removing trail from the projectile on cillision enter or smooth removing. Detached elements must have "AutoDestroying script"
+            foreach (var detachedPrefab in Detached)
             {
-                Destroy(gameObject, hitPS.main.duration);
+                if (detachedPrefab != null)
+                {
+                    ParticleSystem detachedPS = detachedPrefab.GetComponent<ParticleSystem>();
+                    detachedPS.Stop();
+                }
             }
+            if (notDestroy)
+                StartCoroutine(DisableTimer(hitPS.main.duration));
             else
-                Destroy(gameObject, 1);
+            {
+                if (hitPS != null)
+                {
+                    Destroy(gameObject, hitPS.main.duration);
+                }
+                else
+                    Destroy(gameObject, 1);
+            }
         }
+        
     }
 }

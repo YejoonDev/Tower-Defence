@@ -5,16 +5,12 @@ using UnityEngine;
 public class Unit : MonoBehaviour
 {
     public GameObject projectilePrefab;
-    public Transform MuzzleTransform;
+    private Transform _muzzleTransform;
     void Start()
     {
+        _muzzleTransform = transform.Find("Muzzle");
         StartCoroutine(Attack());
     }
-    void Update()
-    {
-        
-    }
-
     
     IEnumerator Attack()
     {
@@ -23,7 +19,7 @@ public class Unit : MonoBehaviour
             yield return new WaitForSeconds(1.0f);
             if (GameManager.Instance.trackedEnemies.Count != 0)
             {
-                Instantiate(projectilePrefab, MuzzleTransform.position, projectilePrefab.transform.rotation);
+                Instantiate(projectilePrefab, _muzzleTransform.position, projectilePrefab.transform.rotation);
             }
         }
         
