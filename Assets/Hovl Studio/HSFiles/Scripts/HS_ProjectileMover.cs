@@ -24,7 +24,7 @@ public class HS_ProjectileMover : MonoBehaviour
     
     protected virtual void Start()
     {
-        _target = GameManager.Instance.trackedEnemies[0];
+        // _target = GameManager.Instance.trackedEnemies[0];
         _targetVector = new Vector3(_target.transform.position.x, 1,
             _target.transform.position.z);
         if (!startChecker)

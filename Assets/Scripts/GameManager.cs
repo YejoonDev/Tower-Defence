@@ -6,55 +6,85 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
+public enum ModeState
+{
+    Normal,
+    Wave,
+    Build,
+}
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
-    public List<GameObject> towersToBuild;
-    public List<GameObject> enemies;
-    public Transform enemySpawnPos;
-    public List<GameObject> trackedEnemies = new List<GameObject>();
-    public int enemyLimitCount = 10;
-    public int currentEnemyLevel;
+    public List<GameObject> trackedEnemies;
+    public ModeState currentMode;
+    public int currentRound;
+    public LayerMask unitLayerMask;
+    
     private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
         }
+        else
+        {
+            Destroy(gameObject);
+        }
+        
+        trackedEnemies = new List<GameObject>();
     }
 
     private void Start()
     {
-        currentEnemyLevel = 0;
+        currentMode = ModeState.Normal;
+        currentRound = 0;
     }
 
     private void Update()
     {
-        if (trackedEnemies.Count == 0 && Input.GetKeyDown(KeyCode.Q))
+        if (currentMode != ModeState.Build && trackedEnemies.Count == 0)
         {
-            StartCoroutine(SpawnRoutine(currentEnemyLevel));
-            currentEnemyLevel++;
+            currentMode = ModeState.Normal;
+            UIManager.Instance.modeTitle.text = "Normal";
         }
-    }
+        
+        
 
-    public void SpawnRandomTower(Vector3 spawnPos)
-    {
-        int randIdx = Random.Range(0, towersToBuild.Count);
-        CapsuleCollider unitCollider = towersToBuild[randIdx].GetComponent<CapsuleCollider>();
-        Instantiate(towersToBuild[randIdx], spawnPos, towersToBuild[randIdx].transform.rotation);
-    }
-    
-    IEnumerator SpawnRoutine(int idx)
-    {
-        for (int i = 0; i < enemyLimitCount; i++)
+        if (currentMode != ModeState.Wave && Input.GetKeyDown(KeyCode.B))
         {
-            GameObject obj = Instantiate(enemies[idx].gameObject, enemySpawnPos.position, 
-                enemies[idx].gameObject.transform.rotation);
-            trackedEnemies.Add(obj);
-            yield return new WaitForSeconds(2.0f);
+            SetBuildMode();
+        }
+
+        if (currentMode != ModeState.Build && Input.GetMouseButtonDown(0))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, Mathf.Infinity, unitLayerMask))
+            {
+                Unit unit = hit.collider.GetComponent<Unit>();
+                unit.DetectionZoneOnOff();
+            }
         }
         
     }
+
+    public void SetBuildMode()
+    {
+        if (currentMode != ModeState.Build)
+        {
+            currentMode = ModeState.Build;
+            UIManager.Instance.modeTitle.text = "Build Mode";
+        }
+        else if (currentMode == ModeState.Build)
+        {
+            currentMode = ModeState.Normal;
+            UIManager.Instance.modeTitle.text = "";
+        }
+    }
+    
+    
+    
+    
     
     
 }

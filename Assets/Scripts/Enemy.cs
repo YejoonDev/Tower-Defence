@@ -6,60 +6,54 @@ using UnityEngine.Serialization;
 
 public class Enemy : MonoBehaviour
 {
-    [SerializeField] private float _speed = 1.0f;
-    private List<GameObject> _destinations = new List<GameObject>();
-    private int _destIdx = 0;
-    public int currentEnemyNumber;
-    public GameObject curDestination;
-    [FormerlySerializedAs("newVec")] public Vector3 destVec;
-    private void Start()
+    [SerializeField] private float speed;
+    private Path path;
+    private int currentPoint;
+    private bool reachedEnd;
+    public List<GameObject> assailantList;
+
+    private void Awake()
     {
-        GetDestinations();
-        curDestination = _destinations[_destIdx];
+        path = FindObjectOfType<Path>();
+        currentPoint = 0;
+        assailantList = new List<GameObject>();
     }
+    
 
     void Update()
     {
-        if (_destIdx < _destinations.Count - 1)
-            MoveToDestination();
-        transform.Translate(_speed * Time.deltaTime * Vector3.forward);
-
-        if (transform.position.z < -6.5f)
+        if (!reachedEnd)
         {
-            Destroy(gameObject);
-        }
-    }
-
-    void GetDestinations()
-    {
-        GameObject parentObject = GameObject.Find("Destinations");
-        if (parentObject != null)
-        {
-            for (int i = 0; i < parentObject.transform.childCount; i++)
+            float distance = (path.points[currentPoint].transform.position - transform.position).magnitude;
+            if (distance < 0.2f)
             {
-                Transform childTransform = parentObject.transform.GetChild(i);
-                if (childTransform != null)
+                transform.position = path.points[currentPoint].transform.position;
+                currentPoint++;
+                if (currentPoint >= path.points.Length)
                 {
-                    _destinations.Add(childTransform.gameObject);
+                    reachedEnd = true;
                 }
                 else
-                    Debug.Log("No child found");
+                {
+                    transform.LookAt(path.points[currentPoint]);
+                }
             }
         }
-        else
-            Debug.Log("parentObject is not founded");
+        transform.Translate(speed * Time.deltaTime * Vector3.forward);
     }
-    void MoveToDestination()
+
+    public void DestroyEnemy()
     {
-        
-        destVec = new Vector3(curDestination.transform.position.x,
-            transform.position.y, curDestination.transform.position.z);
-        float distance = (destVec - transform.position).magnitude;
-        if (distance < 0.1f)
+        // 자신을 공격중인 유닛의 범위 리스트에서 삭제
+        foreach (GameObject obj in assailantList)
         {
-            _destIdx++; 
-            transform.Rotate(Vector3.up, -90.0f, Space.World);
-            curDestination = _destinations[_destIdx]; 
+            Unit unit = obj.gameObject.GetComponent<Unit>();
+            if (unit != null)
+            {
+                unit.enemiesInRange.Remove(this.gameObject);
+            }
         }
+        Destroy(this.gameObject);
     }
+    
 }
