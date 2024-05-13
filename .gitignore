@@ -72,7 +72,13 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 # ect
-/[Aa]ssets/Cube_World/
-/[Aa]ssets/RPGMonsterBundlePBR/
-/[Aa]ssets/BattleRoyaleHeroesPBR/
-/[Aa]ssets/Hovl Studio/
+/[Aa]ssets/01.Scenes/
+/[Aa]ssets/03.Prefabs/
+/[Aa]ssets/04.Materials/
+/[Aa]ssets/05.Textures/
+/[Aa]ssets/07.Shaders/
+/[Aa]ssets/06.Models/
+/[Aa]ssets/08.Sounds/
+/[Aa]ssets/09.Animations/
+/[Aa]ssets/10.Animators/
+/[Aa]ssets/TextMesh Pro/
