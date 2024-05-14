@@ -51,7 +51,7 @@ public class Enemy : MonoBehaviour
             Tower tower = obj.gameObject.GetComponent<Tower>();
             if (tower != null)
             {
-                tower.enemiesInRange.Remove(this.gameObject);
+                tower.enemiesInRange.Remove(this.gameObject.GetComponent<Enemy>());
             }
         }
         Destroy(this.gameObject);
