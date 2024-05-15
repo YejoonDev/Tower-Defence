@@ -9,6 +9,7 @@ public class UIManager : MonoBehaviour
     public static UIManager Instance;
     public TextMeshProUGUI modeTitle;
     public TextMeshProUGUI roundText;
+    [SerializeField] private TextMeshProUGUI alarmText;
     private void Awake()
     {
         if (Instance == null)
@@ -20,15 +21,17 @@ public class UIManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
-
-    void Start()
+    
+    public void DisplayAlarmText(string message)
     {
-        
+        StartCoroutine(DisplayAlarmTextCoroutine(message));
     }
-
-    // Update is called once per frame
-    void Update()
+    
+    IEnumerator DisplayAlarmTextCoroutine(string message)
     {
-        
+        alarmText.text = message;
+        alarmText.gameObject.SetActive(true);
+        yield return new WaitForSeconds(1.0f);
+        alarmText.gameObject.SetActive(false);
     }
 }

@@ -7,4 +7,5 @@ using UnityEngine.Serialization;
 public class Block : MonoBehaviour
 {
     public bool isExisted;
+    public Transform spawnPos;
 }
