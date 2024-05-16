@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor.Build;
 using UnityEditor.PackageManager;
 using UnityEngine;
@@ -9,15 +10,16 @@ using Random = UnityEngine.Random;
 
 public class TowerManager : MonoBehaviour
 {
+    private readonly Vector3 _offMapVector = new Vector3(100, 100, 100);
+    
     public static TowerManager Instance;
     public GameObject[] deployableTowers;
     
-    public LayerMask whatIsBlock;
     public LayerMask whatIsGround;
-    private LayerMask indicatorLayer;
+    public LayerMask whatIsObstacle;
+    public LayerMask whatIsBlock;
     
     [SerializeField] private Transform indicator;
-    private Vector3 _indicatorLastPos = Vector3.zero; 
     private Tower _activeTower;
     
     public bool isPlacing;
@@ -37,47 +39,35 @@ public class TowerManager : MonoBehaviour
         }
     }
 
-    private void Start()
-    {
-        indicatorLayer = indicator.gameObject.layer;
-    }
-
     private void Update()
     {
         if (isPlacing)
         {
-            var result = GetRaycastInfo();
-            indicator.transform.position = result.location;
+            indicator.transform.position = GetGridPosition();
+
+            Ray ray = new Ray(indicator.position + new Vector3(0, -2.0f, 0), Vector3.up);
+            RaycastHit[] hits = new RaycastHit[3];
             
-            
-            if (Input.GetMouseButtonDown(0))
+            int hitCount = Physics.RaycastNonAlloc(ray, hits, 10.0f);
+            for (int i = 0; i < hitCount; i++)
             {
-                if (result.hitObject != null)
-                {
-                    if (result.hitObject.CompareTag("Block"))
+                GameObject hitGameObject = hits[i].collider.gameObject;
+                // Debug.Log("레이캐스트 시작 : " + hitGameObject.name);
+                if ((whatIsBlock.value & (1 <<hitGameObject.layer)) > 0)
+                {    
+                    hitGameObject.SetActive(true);
+                    Block block = hitGameObject.GetComponent<Block>();
+                    indicator.position = block.spawnPos.position;
+                    if (Input.GetMouseButtonDown(0) && !block.isExisted)
                     {
+                        Instantiate(_activeTower, indicator.transform.position, indicator.transform.rotation);
+                        indicator.gameObject.SetActive(false);
                         isPlacing = false;
-                        Block block = result.hitObject.GetComponent<Block>();
-                    
-                        if (!block.isExisted)
-                        {
-                            Instantiate(_activeTower, indicator.transform.position, indicator.transform.rotation);
-                            indicator.gameObject.SetActive(false);
-                            block.isExisted = true;
-                        }
-                        else
-                        {
-                            UIManager.Instance.DisplayAlarmText("We can't build there");
-                        }
-                    }
-                    else if (result.hitObject.CompareTag("Ground"))
-                    {
-                        UIManager.Instance.DisplayAlarmText("We can't build there");
                     }
                 }
-                else
+                else if ((whatIsObstacle.value & (1 << hitGameObject.layer)) > 0)
                 {
-                    UIManager.Instance.DisplayAlarmText("We can't build there");
+                    hitGameObject.SetActive(false);
                 }
             }
         }
@@ -89,45 +79,27 @@ public class TowerManager : MonoBehaviour
         _activeTower = towerToPlace;
         
         Destroy(indicator.gameObject);
-        Tower placeTower = Instantiate(_activeTower);
-        placeTower.enabled = false;
+        Tower placeTower = Instantiate(towerToPlace);
         indicator = placeTower.transform;
+        placeTower.enabled = false;
+        placeTower.GetComponent<Collider>().enabled = false;
     }
 
-    private (Vector3 location, GameObject hitObject) GetRaycastInfo()
+    private Vector3 GetGridPosition()
     {
-        indicator.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+        Vector3 location = _offMapVector;
         Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
         
-        Vector3 location = Vector3.zero;
-        GameObject hitObject = null;
-        
-        // Debug.DrawRay(ray.origin, ray.direction * 200, Color.red);
-        if (Physics.Raycast(ray, out hit, 200.0f))
+        if (Physics.Raycast(ray, out RaycastHit hit, 200.0f, whatIsGround))
         {
-            int hitLayer = hit.collider.gameObject.layer;
-            if ((whatIsBlock.value & (1 << hitLayer)) > 0)
-            {
-                Block block = hit.collider.GetComponent<Block>();
-                location = block.spawnPos.position;
-            }
-            else if ((whatIsGround.value & (1 << hitLayer)) > 0)
-            {
-                location = hit.point;
-            }
-            else
-            {
-                location = _indicatorLastPos;
-            }
-            _indicatorLastPos = hit.point;
-            hitObject = hit.collider.gameObject;
+            indicator.gameObject.SetActive(true);
+            location = hit.point;
         }
         else
         {
-            location = _indicatorLastPos;
+            indicator.gameObject.SetActive(false);
         }
-        return  (location, hitObject);
+        return location;
     }
     
     

@@ -1,9 +1,0 @@
-Assets/03.Prefabs/ filter=lfs diff=lfs merge=lfs -text
-Assets/04.Materials/ filter=lfs diff=lfs merge=lfs -text
-Assets/05.Textures/ filter=lfs diff=lfs merge=lfs -text
-Assets/06.Models/ filter=lfs diff=lfs merge=lfs -text
-Assets/07.Shaders/ filter=lfs diff=lfs merge=lfs -text
-Assets/08.Sounds/ filter=lfs diff=lfs merge=lfs -text
-Assets/09.Animations/ filter=lfs diff=lfs merge=lfs -text
-Assets/10.Animators/ filter=lfs diff=lfs merge=lfs -text
-Assets/TextMesh[[:space:]]Pro/ filter=lfs diff=lfs merge=lfs -text
