@@ -3,26 +3,38 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 public class Enemy : MonoBehaviour
 {
     [SerializeField] private float speed;
-    [SerializeField] private int hp;
+    
     private Path path;
     private int currentPoint;
     private bool reachedEnd;
     public List<GameObject> assailantList;
 
+    public Slider healthSlider;
+    [SerializeField] private int totalHealth;
+    private int _currentHealth;
+    
     private void Awake()
     {
         path = FindObjectOfType<Path>();
         currentPoint = 0;
         assailantList = new List<GameObject>();
     }
-    
+
+    private void Start()
+    {
+        _currentHealth = totalHealth;
+        healthSlider.maxValue = totalHealth;
+        healthSlider.value = _currentHealth;
+    }
 
     void Update()
     {
+        healthSlider.transform.rotation = Camera.main.transform.rotation;
         if (!reachedEnd)
         {
             float distance = (path.points[currentPoint].transform.position - transform.position).magnitude;
@@ -54,16 +66,19 @@ public class Enemy : MonoBehaviour
                 tower.enemiesInRange.Remove(this.gameObject.GetComponent<Enemy>());
             }
         }
+
+        GameManager.Instance.trackedEnemies.Remove(this.gameObject);
         Destroy(this.gameObject);
     }
 
-    public void TakeDamage(int damageAmount)
+    public void GetDamage(int damageAmount)
     {
-        hp -= damageAmount;
-        if (hp <= 0)
+        _currentHealth -= damageAmount;
+        if (_currentHealth <= 0)
         {
-            hp = 0;
+            _currentHealth = 0;
             DestroyEnemy();
         }
+        healthSlider.value = _currentHealth;
     }
 }

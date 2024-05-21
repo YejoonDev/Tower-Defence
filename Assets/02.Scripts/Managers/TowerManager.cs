@@ -52,18 +52,27 @@ public class TowerManager : MonoBehaviour
             for (int i = 0; i < hitCount; i++)
             {
                 GameObject hitGameObject = hits[i].collider.gameObject;
-                // Debug.Log("레이캐스트 시작 : " + hitGameObject.name);
                 if ((whatIsBlock.value & (1 <<hitGameObject.layer)) > 0)
                 {    
                     hitGameObject.SetActive(true);
                     Block block = hitGameObject.GetComponent<Block>();
                     indicator.position = block.spawnPos.position;
-                    if (Input.GetMouseButtonDown(0) && !block.isExisted)
+                    
+                    if (Input.GetMouseButtonDown(0))
                     {
-                        Instantiate(_activeTower, indicator.transform.position, indicator.transform.rotation);
-                        indicator.gameObject.SetActive(false);
-                        isPlacing = false;
+                        if (!block.isExisted)
+                        {
+                            Instantiate(_activeTower, indicator.transform.position, indicator.transform.rotation);
+                            block.isExisted = true;
+                            indicator.gameObject.SetActive(false);
+                            isPlacing = false;
+                        }
+                        else
+                        {
+                            UIManager.Instance.DisplayAlarmText("We can't build there");
+                        }
                     }
+                    
                 }
                 else if ((whatIsObstacle.value & (1 << hitGameObject.layer)) > 0)
                 {
