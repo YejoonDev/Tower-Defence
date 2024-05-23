@@ -10,27 +10,27 @@ using Random = UnityEngine.Random;
 
 public class TowerManager : MonoBehaviour
 {
-    private readonly Vector3 _offMapVector = new Vector3(100, 100, 100);
-    
+    // static variables
     public static TowerManager Instance;
-    public GameObject[] deployableTowers;
-    
-    public LayerMask whatIsGround;
-    public LayerMask whatIsObstacle;
-    public LayerMask whatIsBlock;
-    
+    // readonly variables
+    private readonly Vector3 _offMapVector = new Vector3(100, 100, 100);
+    // Inspector variables
     [SerializeField] private Transform indicator;
-    private Tower _activeTower;
-    
+    [SerializeField] private LayerMask whatIsGround;
+    [SerializeField] private LayerMask whatIsObstacle;
+    [SerializeField] private LayerMask whatIsBlock;
+    // public variables
     public bool isPlacing;
-
-    private Camera _mainCamera;
+    // private variables
+    private Camera _mainCamera; 
+    private Tower _activeTower;
     
     private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
             _mainCamera = Camera.main;
         }
         else
@@ -62,9 +62,9 @@ public class TowerManager : MonoBehaviour
                     {
                         if (!block.isExisted)
                         {
+                            indicator.gameObject.SetActive(false);
                             Instantiate(_activeTower, indicator.transform.position, indicator.transform.rotation);
                             block.isExisted = true;
-                            indicator.gameObject.SetActive(false);
                             isPlacing = false;
                         }
                         else
@@ -90,8 +90,7 @@ public class TowerManager : MonoBehaviour
         Destroy(indicator.gameObject);
         Tower placeTower = Instantiate(towerToPlace);
         indicator = placeTower.transform;
-        placeTower.enabled = false;
-        placeTower.GetComponent<Collider>().enabled = false;
+        placeTower.InitializeIndicatorTower();
     }
 
     private Vector3 GetGridPosition()

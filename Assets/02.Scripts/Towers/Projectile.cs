@@ -26,7 +26,7 @@ public class Projectile : MonoBehaviour
         transform.rotation = targetRotation;
     }
 
-    public void Initialize(GameObject target, float speed, int damage)
+    public void InitializeProjectile(GameObject target, float speed, int damage)
     {
         _target = target;
         _targetBoxCollider = _target.GetComponent<BoxCollider>();

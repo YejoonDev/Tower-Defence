@@ -54,17 +54,7 @@ public class GameManager : MonoBehaviour
         {
             SetBuildMode();
         }
-
-        if (currentMode != ModeState.Build && Input.GetMouseButtonDown(0))
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit, Mathf.Infinity, unitLayerMask))
-            {
-                Tower tower = hit.collider.GetComponent<Tower>();
-                tower.DetectionZoneOnOff();
-            }
-        }
+        
         
     }
 

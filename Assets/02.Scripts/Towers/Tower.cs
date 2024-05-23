@@ -5,41 +5,33 @@ using UnityEngine;
 
 public class Tower : MonoBehaviour
 {
+    // readOnly variables
+    private readonly float _detectionInterval = 0.2f;
+    // inspector variables
     [SerializeField] private float speed;
     [SerializeField] private int damage;
     [SerializeField] private float range = 5.0f;
-
-    public LayerMask whatIsEnemy;
-    
-    public GameObject projectilePrefab;
-    private Transform _firePoint;
-
-    public Transform launchModel;
-    
-    public List<Enemy> enemiesInRange = new List<Enemy>();
-    private Collider[] colliderInRange;
-    
-    private GameObject detectionZoneVisualization;
-    
-    [SerializeField] private float detectionZoneRadius;
-
-    [SerializeField] private float detectionInterval = 0.2f;
-    private float _detectionTimer = 0;
-
     [SerializeField] private float fireInterval = 2.0f;
+    // public variables
+    public List<Enemy> enemiesInRange = new List<Enemy>();
+    public GameObject projectilePrefab;
+    public Transform launchModel;
+    public LayerMask whatIsEnemy;
+    public bool enemiesUpdated;
+    // private variables
+    private GameObject _rangeIndicator;
+    private Transform _firePoint;
+    private Transform _target;
+    private Collider[] _colliderInRange;
+    private float _detectionTimer = 0;
     private float _fireTimer = 0;
 
-    private Transform _target;
-    public bool enemiesUpdated;
-    void Start()
+    private void Awake()
     {
         _firePoint = transform.Find("Fire Point");
-        
-        detectionZoneVisualization = transform.Find("Detection Zone Visualization").gameObject;
-        detectionZoneVisualization.transform.localScale = new Vector3(detectionZoneRadius*2, 0, detectionZoneRadius*2);
-        // StartCoroutine(Attack());
+        _rangeIndicator = transform.Find("Range Indicator").gameObject;
     }
-
+    
     private void Update()
     {
         enemiesUpdated = false;
@@ -54,7 +46,7 @@ public class Tower : MonoBehaviour
         
         // 감지
         _detectionTimer += Time.deltaTime;
-        if (_detectionTimer >= detectionInterval)
+        if (_detectionTimer >= _detectionInterval)
         {
             _detectionTimer = 0;
             DetectEnemiesInRange();
@@ -79,11 +71,19 @@ public class Tower : MonoBehaviour
         }
     }
 
+    public void InitializeIndicatorTower()
+    {
+        enabled = false;
+        GetComponent<Collider>().enabled = false;
+        _rangeIndicator.SetActive(true);
+        _rangeIndicator.transform.localScale = new Vector3(range, 0.2f, range);
+    }
+
     private void DetectEnemiesInRange()
     {
-        colliderInRange = Physics.OverlapSphere(transform.position, range, whatIsEnemy);
+        _colliderInRange = Physics.OverlapSphere(transform.position, range, whatIsEnemy);
         enemiesInRange.Clear();
-        foreach (Collider col in colliderInRange)
+        foreach (Collider col in _colliderInRange)
         {
             enemiesInRange.Add(col.GetComponent<Enemy>());
         }
@@ -94,7 +94,7 @@ public class Tower : MonoBehaviour
         GameObject projectileObject =
             Instantiate(projectilePrefab, _firePoint.position, _firePoint.rotation);
         Projectile projectile = projectileObject.GetComponent<Projectile>();
-        projectile.Initialize(_target.gameObject, speed, damage);
+        projectile.InitializeProjectile(_target.gameObject, speed, damage);
     }
     private void SetClosestTarget()
     {
@@ -112,19 +112,4 @@ public class Tower : MonoBehaviour
             }
         }
     }
-    
-    public void DetectionZoneOnOff()
-    {
-        if (detectionZoneVisualization.activeInHierarchy)
-        {
-            detectionZoneVisualization.SetActive(false);
-        }
-        else
-        {
-            detectionZoneVisualization.SetActive(true);
-        }
-            
-    }
-    
-    
 }
