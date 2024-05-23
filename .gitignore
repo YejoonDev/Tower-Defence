@@ -71,6 +71,9 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
+# meta file
+*.meta
+
 # ect
 /[Aa]ssets/01.Scenes/
 /[Aa]ssets/03.Prefabs/

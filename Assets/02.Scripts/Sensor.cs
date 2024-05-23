@@ -11,10 +11,10 @@ public class Sensor : MonoBehaviour
         if (other.gameObject.CompareTag("Enemy"))
         {
             GameManager.Instance.trackedEnemies.Remove(other.gameObject);
-            Enemy enemy = other.gameObject.GetComponent<Enemy>();
-            if (enemy != null)
+            EnemyController enemyController = other.gameObject.GetComponent<EnemyController>();
+            if (enemyController != null)
             {
-                enemy.DestroyEnemy();
+                enemyController.DestroyEnemy();
             }
         }
     }

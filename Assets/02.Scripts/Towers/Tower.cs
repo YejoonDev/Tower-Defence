@@ -7,13 +7,14 @@ public class Tower : MonoBehaviour
 {
     // readOnly variables
     private readonly float _detectionInterval = 0.2f;
-    // inspector variables
+    // serialize variables
+    [SerializeField] public int cost;
     [SerializeField] private float speed;
     [SerializeField] private int damage;
     [SerializeField] private float range = 5.0f;
     [SerializeField] private float fireInterval = 2.0f;
     // public variables
-    public List<Enemy> enemiesInRange = new List<Enemy>();
+    public List<EnemyController> enemiesInRange = new List<EnemyController>();
     public GameObject projectilePrefab;
     public Transform launchModel;
     public LayerMask whatIsEnemy;
@@ -85,7 +86,7 @@ public class Tower : MonoBehaviour
         enemiesInRange.Clear();
         foreach (Collider col in _colliderInRange)
         {
-            enemiesInRange.Add(col.GetComponent<Enemy>());
+            enemiesInRange.Add(col.GetComponent<EnemyController>());
         }
     }
     private void FireProjectile()
@@ -99,7 +100,7 @@ public class Tower : MonoBehaviour
     private void SetClosestTarget()
     {
         float minDistance = this.range + 1;
-        foreach (Enemy enemy in enemiesInRange)
+        foreach (EnemyController enemy in enemiesInRange)
         {
             if (enemy != null)
             {

@@ -8,8 +8,7 @@ public class EnemySpawner : MonoBehaviour
     public int enemySpawnNumber = 10;
     public GameObject[] enemyWaveArray;
     
-
-    // Update is called once per frame
+    
     void Update()
     {
         if (GameManager.Instance.currentMode == ModeState.Normal && Input.GetKeyDown(KeyCode.Q))

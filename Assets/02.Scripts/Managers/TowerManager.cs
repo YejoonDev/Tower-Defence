@@ -60,16 +60,18 @@ public class TowerManager : MonoBehaviour
                     
                     if (Input.GetMouseButtonDown(0))
                     {
-                        if (!block.isExisted)
+                        if (block.isExisted)
+                        {
+                            UIManager.Instance.DisplayAlarmText("We can't build there");
+                            continue;
+                        }
+                        
+                        if (MoneyManager.Instance.SpendMoney(_activeTower.cost))
                         {
                             indicator.gameObject.SetActive(false);
                             Instantiate(_activeTower, indicator.transform.position, indicator.transform.rotation);
                             block.isExisted = true;
                             isPlacing = false;
-                        }
-                        else
-                        {
-                            UIManager.Instance.DisplayAlarmText("We can't build there");
                         }
                     }
                     

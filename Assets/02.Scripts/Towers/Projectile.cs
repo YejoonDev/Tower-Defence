@@ -38,11 +38,8 @@ public class Projectile : MonoBehaviour
     {
         if (other.gameObject == _target.gameObject)
         {
-            Enemy enemy = other.GetComponent<Enemy>();
-            if (enemy != null)
-            {
-                enemy.GetDamage(_damage);
-            }
+            EnemyHealthController enemyHealthController = other.GetComponent<EnemyHealthController>();
+            enemyHealthController.TakeDamage(_damage);
             Destroy(gameObject);
         }
             

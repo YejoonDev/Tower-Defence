@@ -6,22 +6,26 @@ using UnityEngine;
 
 public class UIManager : MonoBehaviour
 { 
+    // static variables
     public static UIManager Instance;
+    // public variables
     public TextMeshProUGUI modeTitle;
     public TextMeshProUGUI roundText;
+    public TMP_Text moneyText; 
     [SerializeField] private TextMeshProUGUI alarmText;
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
+        if (Instance != null)
         {
             Destroy(gameObject);
         }
+        else
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
     }
-    
+
     public void DisplayAlarmText(string message)
     {
         StartCoroutine(DisplayAlarmTextCoroutine(message));
