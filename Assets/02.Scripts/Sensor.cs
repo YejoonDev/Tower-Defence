@@ -10,7 +10,6 @@ public class Sensor : MonoBehaviour
         Debug.Log("트리거");
         if (other.gameObject.CompareTag("Enemy"))
         {
-            GameManager.Instance.trackedEnemies.Remove(other.gameObject);
             EnemyController enemyController = other.gameObject.GetComponent<EnemyController>();
             if (enemyController != null)
             {

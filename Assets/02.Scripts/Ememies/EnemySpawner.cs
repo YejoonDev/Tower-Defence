@@ -5,19 +5,30 @@ using UnityEngine.Serialization;
 
 public class EnemySpawner : MonoBehaviour
 {
-    public int enemySpawnNumber = 10;
+    // serialized variables
+    [SerializeField] private int enemySpawnNumber = 10;
+    // public variables
+    public int remainingEnemiesToSpawn;
     public GameObject[] enemyWaveArray;
-    
-    
+
+
+    private void Awake()
+    {
+        
+    }
+
     void Update()
     {
-        if (GameManager.Instance.currentMode == ModeState.Normal && Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetKeyDown(KeyCode.Q))
         {
-            GameManager.Instance.currentMode = ModeState.Wave;
-            UIManager.Instance.modeTitle.text = "Wave";
-            UIManager.Instance.roundText.text = "Round : " + (GameManager.Instance.currentRound + 1);
-            StartCoroutine(SpawnRoutine(GameManager.Instance.currentRound));
-            GameManager.Instance.currentRound++;
+            if (!GameManager.Instance.levelActive)
+            {
+                remainingEnemiesToSpawn = enemySpawnNumber;
+                GameManager.Instance.levelActive = true;
+                UIManager.Instance.roundText.text = "Round : " + (GameManager.Instance.currentRound + 1);
+                StartCoroutine(SpawnRoutine(GameManager.Instance.currentRound));
+                GameManager.Instance.currentRound++;
+            }
         }
     }
     
@@ -27,7 +38,7 @@ public class EnemySpawner : MonoBehaviour
         {
             GameObject obj = Instantiate(enemyWaveArray[idx].gameObject, transform.position, 
                 enemyWaveArray[idx].gameObject.transform.rotation);
-            GameManager.Instance.trackedEnemies.Add(obj);
+            remainingEnemiesToSpawn--;
             yield return new WaitForSeconds(2.0f);
         }
     }

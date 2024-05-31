@@ -20,6 +20,7 @@ public class EnemyController : MonoBehaviour
     private void Start()
     {
         _path = FindObjectOfType<Path>();
+        GameManager.Instance.ActiveEnemies.Add(this);
     }
 
     void Update()
@@ -55,7 +56,7 @@ public class EnemyController : MonoBehaviour
                 tower.enemiesInRange.Remove(this.gameObject.GetComponent<EnemyController>());
             }
         }
-        GameManager.Instance.trackedEnemies.Remove(this.gameObject);
+        GameManager.Instance.ActiveEnemies.Remove(this);
         Destroy(this.gameObject);
     }
 

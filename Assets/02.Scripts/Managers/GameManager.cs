@@ -6,19 +6,14 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
-public enum ModeState
-{
-    Normal,
-    Wave,
-    Build,
-}
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
-    public List<GameObject> trackedEnemies;
-    public ModeState currentMode;
+    public List<EnemyController> ActiveEnemies = new List<EnemyController>();
     public int currentRound;
     public LayerMask unitLayerMask;
+    public bool levelActive;
+    private EnemySpawner enemySpawner;
     
     private void Awake()
     {
@@ -30,49 +25,22 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
-        
-        trackedEnemies = new List<GameObject>();
     }
 
     private void Start()
     {
-        currentMode = ModeState.Normal;
+        enemySpawner = FindObjectOfType<EnemySpawner>();
         currentRound = 0;
     }
 
     private void Update()
     {
-        if (currentMode != ModeState.Build && trackedEnemies.Count == 0)
+        if (ActiveEnemies.Count == 0 && enemySpawner.remainingEnemiesToSpawn == 0)
         {
-            currentMode = ModeState.Normal;
-            UIManager.Instance.modeTitle.text = "Normal";
-        }
-        
-        
-
-        if (currentMode != ModeState.Wave && Input.GetKeyDown(KeyCode.B))
-        {
-            SetBuildMode();
-        }
-        
-        
-    }
-
-    public void SetBuildMode()
-    {
-        if (currentMode != ModeState.Build)
-        {
-            currentMode = ModeState.Build;
-            UIManager.Instance.modeTitle.text = "Build Mode";
-        }
-        else if (currentMode == ModeState.Build)
-        {
-            currentMode = ModeState.Normal;
-            UIManager.Instance.modeTitle.text = "";
+            levelActive = false;
         }
     }
-    
-    
+
     
     
     
