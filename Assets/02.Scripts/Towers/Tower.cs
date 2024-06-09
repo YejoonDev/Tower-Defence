@@ -9,19 +9,21 @@ public class Tower : MonoBehaviour
     private readonly float _detectionInterval = 0.2f;
     // serialize variables
     [SerializeField] public int cost;
-    [SerializeField] private float speed;
-    [SerializeField] private int damage;
+    
     [SerializeField] private float range = 5.0f;
     [SerializeField] private float fireInterval = 2.0f;
     // public variables
     public List<EnemyController> enemiesInRange = new List<EnemyController>();
-    public GameObject projectilePrefab;
+    
     public Transform launchModel;
     public LayerMask whatIsEnemy;
     public bool enemiesUpdated;
     // private variables
     private GameObject _rangeIndicator;
-    private Transform _firePoint;
+    private IAttack _attackBehavior;
+    private ITargetAttack _targetAttackBehavior;
+    private ProjectileAttack _projectileAttack;
+    private SlowdownAttack _slowdownAttack;
     private Transform _target;
     private Collider[] _colliderInRange;
     private float _detectionTimer = 0;
@@ -29,14 +31,18 @@ public class Tower : MonoBehaviour
 
     private void Awake()
     {
-        _firePoint = transform.Find("Fire Point");
         _rangeIndicator = transform.Find("Range Indicator").gameObject;
     }
-    
+
+    private void Start()
+    {
+        _attackBehavior = GetComponent<IAttack>();
+        _targetAttackBehavior = _attackBehavior as ITargetAttack;
+    }
+
     private void Update()
     {
         enemiesUpdated = false;
-        
         // 회전
         if (_target != null)
         {
@@ -54,12 +60,19 @@ public class Tower : MonoBehaviour
             enemiesUpdated = true;
         }
         
-        // 발사 
+        // 공격 
         _fireTimer += Time.deltaTime;
         if (_fireTimer >= fireInterval && _target != null)
         {
             _fireTimer = 0;
-            FireProjectile();
+            if (_targetAttackBehavior != null)
+            {
+                _targetAttackBehavior.Attack(_target);
+            }
+            else
+            {
+                _attackBehavior.Attack();
+            }
         }
 
         // 가장 가까운 적 타겟으로 지정 
@@ -82,20 +95,12 @@ public class Tower : MonoBehaviour
 
     private void DetectEnemiesInRange()
     {
-        _colliderInRange = Physics.OverlapSphere(transform.position, range, whatIsEnemy);
+        _colliderInRange = Physics.OverlapSphere(transform.position, range/ 2, whatIsEnemy);
         enemiesInRange.Clear();
         foreach (Collider col in _colliderInRange)
         {
             enemiesInRange.Add(col.GetComponent<EnemyController>());
         }
-    }
-    private void FireProjectile()
-    {
-        _firePoint.LookAt(_target);
-        GameObject projectileObject =
-            Instantiate(projectilePrefab, _firePoint.position, _firePoint.rotation);
-        Projectile projectile = projectileObject.GetComponent<Projectile>();
-        projectile.InitializeProjectile(_target.gameObject, speed, damage);
     }
     private void SetClosestTarget()
     {
@@ -112,5 +117,14 @@ public class Tower : MonoBehaviour
                 }
             }
         }
+    }
+    
+    private void OnDrawGizmos()
+    {
+        // 스피어의 색상을 설정합니다.
+        Gizmos.color = Color.red;
+        
+        // 스피어를 그립니다.
+        Gizmos.DrawWireSphere(transform.position, range/ 2);
     }
 }

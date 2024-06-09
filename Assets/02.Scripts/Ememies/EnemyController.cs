@@ -12,6 +12,7 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private int rewardMoney;
     // public variables
     public List<GameObject> assailantList = new List<GameObject>();
+    public float speedModifier = 1.0f;
     // private variables
     private Path _path;
     private int _currentPoint;
@@ -42,7 +43,12 @@ public class EnemyController : MonoBehaviour
                 }
             }
         }
-        transform.Translate(speed * Time.deltaTime * Vector3.forward);
+        transform.Translate(speed * speedModifier * Time.deltaTime * Vector3.forward);
+    }
+
+    public void RemoveDeBuff()
+    {
+        speedModifier = 1.0f;
     }
 
     public void DestroyEnemy()
