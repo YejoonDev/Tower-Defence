@@ -5,6 +5,7 @@ using Unity.VisualScripting;
 using UnityEditor.Build;
 using UnityEditor.PackageManager;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
@@ -12,18 +13,23 @@ public class TowerManager : MonoBehaviour
 {
     // static variables
     public static TowerManager Instance;
-    // readonly variables
-    private readonly Vector3 _offMapVector = new Vector3(100, 100, 100);
     // Inspector variables
-    [SerializeField] private Transform indicator;
+    [SerializeField] private Tower indicatorTower;
     [SerializeField] private LayerMask whatIsGround;
-    [SerializeField] private LayerMask whatIsObstacle;
     [SerializeField] private LayerMask whatIsBlock;
+    [SerializeField] private LayerMask whatIsTower;
     // public variables
-    public bool isPlacing;
+    public Tower[] normalTowerVersions;
+    public Tower[] fireTowerVersions;
+    public Tower[] iceTowerVersions;
+    public Tower[] electronicTowerVersions;
+    public Tower[] magicTowerVersions;
+    [HideInInspector] public Tower selectedTower; 
+    [HideInInspector] public bool isPlacing;
     // private variables
-    private Camera _mainCamera; 
+    private Camera _mainCamera;
     private Tower _activeTower;
+    
     
     private void Awake()
     {
@@ -43,76 +49,104 @@ public class TowerManager : MonoBehaviour
     {
         if (isPlacing)
         {
-            indicator.transform.position = GetGridPosition();
-
-            Ray ray = new Ray(indicator.position + new Vector3(0, -2.0f, 0), Vector3.up);
-            RaycastHit[] hits = new RaycastHit[3];
-            
-            int hitCount = Physics.RaycastNonAlloc(ray, hits, 10.0f);
-            for (int i = 0; i < hitCount; i++)
+            indicatorTower.transform.position = GetMousePositionWithRaycast();
+            Ray ray = new Ray(indicatorTower.transform.position + new Vector3(0, -2.0f, 0),
+                Vector3.up);
+            if (Physics.Raycast(ray,out RaycastHit hit,10.0f, whatIsBlock))
             {
-                GameObject hitGameObject = hits[i].collider.gameObject;
-                if ((whatIsBlock.value & (1 <<hitGameObject.layer)) > 0)
-                {    
-                    hitGameObject.SetActive(true);
-                    Block block = hitGameObject.GetComponent<Block>();
-                    indicator.position = block.spawnPos.position;
-                    
-                    if (Input.GetMouseButtonDown(0))
-                    {
-                        if (block.isExisted)
-                        {
-                            UIManager.Instance.DisplayAlarmText("We can't build there");
-                            continue;
-                        }
-                        
-                        if (MoneyManager.Instance.SpendMoney(_activeTower.cost))
-                        {
-                            indicator.gameObject.SetActive(false);
-                            Instantiate(_activeTower, indicator.transform.position, indicator.transform.rotation);
-                            block.isExisted = true;
-                            isPlacing = false;
-                        }
+                Block block = hit.collider.GetComponent<Block>();
+                indicatorTower.transform.position = block.spawnPos.position;
+            }
+        }
+        
+        // 마우스 클릭을 감지
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (EventSystem.current.IsPointerOverGameObject())
+            {
+                Debug.Log("레이 종료");
+                return;
+            }
+            Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            { 
+                // 클릭된 객체가 Tower일 때
+                if ((whatIsTower.value & (1 << hit.collider.gameObject.layer)) > 0)
+                { 
+                    Debug.Log("타워");
+                    Tower clickedTower = hit.collider.GetComponent<Tower>();
+                    if (clickedTower == selectedTower)
+                    { 
+                        UIManager.Instance.CloseTowerDetailsPanel();
                     }
-                    
+                    else
+                    { 
+                        UIManager.Instance.CloseTowerDetailsPanel();
+                        UIManager.Instance.OpenTowerDetailsPanel(clickedTower);
+                    }
                 }
-                else if ((whatIsObstacle.value & (1 << hitGameObject.layer)) > 0)
+                // placing 상태이고, 클릭된 객체가 Block일 때
+                else if (isPlacing && (whatIsBlock.value & (1 << hit.collider.gameObject.layer)) > 0)
                 {
-                    hitGameObject.SetActive(false);
+                    Block block = hit.collider.GetComponent<Block>();
+                    ConstructTower(block);
+                    isPlacing = false;
                 }
+                // 그 외의 것들이 클릭 되었을 때
+                else 
+                {
+                    UIManager.Instance.CloseTowerDetailsPanel();
+                }
+            }
+            else
+            { 
+                UIManager.Instance.CloseTowerDetailsPanel();
             }
         }
     }
 
+    private void ConstructTower(Block block)
+    {
+        if (MoneyManager.Instance.SpendMoney(_activeTower.cost))
+        {
+            Instantiate(_activeTower, indicatorTower.transform.position, indicatorTower.transform.rotation);
+            indicatorTower.gameObject.SetActive(false);
+            block.isExisted = true;
+            isPlacing = false;
+        }
+    }
+    
     public void StartTowerPlacement(Tower towerToPlace)
     {
-        isPlacing = true;
         _activeTower = towerToPlace;
-        
-        Destroy(indicator.gameObject);
-        Tower placeTower = Instantiate(towerToPlace);
-        indicator = placeTower.transform;
-        placeTower.InitializeIndicatorTower();
+        Destroy(indicatorTower.gameObject);
+        indicatorTower = Instantiate(towerToPlace);
+        indicatorTower.SetupIndicatorTower();
+        isPlacing = true;
+        UIManager.Instance.CloseTowerDetailsPanel();
     }
 
-    private Vector3 GetGridPosition()
+    public void UpgradeTower()
     {
-        Vector3 location = _offMapVector;
+        selectedTower.Upgrade();
+    }
+    
+    
+    private Vector3 GetMousePositionWithRaycast() // 마우스 위치값 받아오는 함수
+    {
+        Vector3 location = Vector3.zero;
         Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
         
         if (Physics.Raycast(ray, out RaycastHit hit, 200.0f, whatIsGround))
         {
-            indicator.gameObject.SetActive(true);
+            indicatorTower.gameObject.SetActive(true);
             location = hit.point;
         }
         else
         {
-            indicator.gameObject.SetActive(false);
+            indicatorTower.gameObject.SetActive(false);
         }
         return location;
     }
-    
-    
-    
     
 }

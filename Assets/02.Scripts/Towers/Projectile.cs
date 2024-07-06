@@ -23,7 +23,6 @@ public class Projectile : MonoBehaviour
         Vector3 targetCenter = _target.transform.TransformPoint(_targetBoxCollider.center);
         Vector3 targetDirection = (targetCenter - transform.position).normalized;
         Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
-        Debug.Log((_target.transform.position + _targetBoxCollider.center).y);
         transform.Translate( Time.deltaTime * _speed * Vector3.forward);
         transform.rotation = targetRotation;
     }

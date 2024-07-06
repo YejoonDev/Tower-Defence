@@ -9,6 +9,5 @@ public class TowerButton : MonoBehaviour
     public void SelectTower()
     {
         TowerManager.Instance.StartTowerPlacement(towerToPlace);
-        Debug.Log("Pressed");
     }
 }

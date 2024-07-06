@@ -1,22 +1,31 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SlowdownAttack : MonoBehaviour, IAttack
+public class DebuffTower : Tower
 {
-    private Tower _theTower;
+    //  Serialize Field
     [SerializeField] private float duration;
     [SerializeField] private float speedModifier;
 
-    private void Start()
+    // Update is called once per frame
+    void Update()
     {
-        _theTower = GetComponent<Tower>();
+        base.Update();
     }
 
-    public void Attack()
+    protected override bool CanAttack()
     {
-        foreach (EnemyController enemy in _theTower.enemiesInRange)
+        if (FireTimer >= fireInterval && enemiesInRange.Count != 0)
+            return true;
+        
+        return false;
+    }
+
+    protected override void Attack()
+    {
+        FireTimer = 0;
+        foreach (EnemyController enemy in enemiesInRange)
         {
             StartCoroutine(ApplyDeBuff(enemy));
         }

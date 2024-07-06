@@ -2,123 +2,157 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
+public enum TowerType
+{
+    Fire,
+    Ice,
+    Electronic,
+    Magic,
+    Normal,
+}
 public class Tower : MonoBehaviour
 {
+    // static variables
+    
     // readOnly variables
     private readonly float _detectionInterval = 0.2f;
     // serialize variables
-    [SerializeField] public int cost;
-    
-    [SerializeField] private float range = 5.0f;
-    [SerializeField] private float fireInterval = 2.0f;
+    [SerializeField] private TowerType towerType;
+    [SerializeField] private GameObject rangeCircle;
+    [SerializeField] public int cost = 100;
+    [SerializeField] protected float range = 5.0f;
+    [SerializeField] protected float fireInterval = 2.0f;
+    [SerializeField] private float rangeCircleScaleFactor = 1;
+    [SerializeField] private int level = 1;
     // public variables
     public List<EnemyController> enemiesInRange = new List<EnemyController>();
-    
-    public Transform launchModel;
-    public LayerMask whatIsEnemy;
-    public bool enemiesUpdated;
+    // protected variables
+    protected bool EnemiesUpdated;
+    protected float FireTimer = 0;
     // private variables
-    private GameObject _rangeIndicator;
-    private IAttack _attackBehavior;
-    private ITargetAttack _targetAttackBehavior;
-    private ProjectileAttack _projectileAttack;
-    private SlowdownAttack _slowdownAttack;
-    private Transform _target;
     private Collider[] _colliderInRange;
+    private LayerMask _whatIsEnemy;
     private float _detectionTimer = 0;
-    private float _fireTimer = 0;
 
-    private void Awake()
+    protected virtual void Awake()
     {
-        _rangeIndicator = transform.Find("Range Indicator").gameObject;
+        _whatIsEnemy = LayerMask.GetMask("Enemy");
     }
 
-    private void Start()
+    protected virtual void Start()
     {
-        _attackBehavior = GetComponent<IAttack>();
-        _targetAttackBehavior = _attackBehavior as ITargetAttack;
+        rangeCircle.transform.localScale = 
+            new Vector3(range * rangeCircleScaleFactor, 0.2f, range * rangeCircleScaleFactor);
+        UpdateRangeCircleColor();
+        DeActiveRangeCircle();
     }
 
-    private void Update()
+    protected virtual void Update()
     {
-        enemiesUpdated = false;
-        // 회전
-        if (_target != null)
-        {
-            Quaternion lookRotation = Quaternion.LookRotation(_target.position - launchModel.position);
-            launchModel.rotation = Quaternion.Slerp(launchModel.rotation, lookRotation, 5.0f * Time.deltaTime);
-            launchModel.rotation = Quaternion.Euler(0, launchModel.rotation.eulerAngles.y, 0);
-        }
+        EnemiesUpdated = false;
+        
+        _detectionTimer += Time.deltaTime;
+        FireTimer += Time.deltaTime;
         
         // 감지
-        _detectionTimer += Time.deltaTime;
         if (_detectionTimer >= _detectionInterval)
         {
             _detectionTimer = 0;
             DetectEnemiesInRange();
-            enemiesUpdated = true;
+            EnemiesUpdated = true;
         }
         
         // 공격 
-        _fireTimer += Time.deltaTime;
-        if (_fireTimer >= fireInterval && _target != null)
+        if (CanAttack())
         {
-            _fireTimer = 0;
-            if (_targetAttackBehavior != null)
-            {
-                _targetAttackBehavior.Attack(_target);
-            }
-            else
-            {
-                _attackBehavior.Attack();
-            }
-        }
-
-        // 가장 가까운 적 타겟으로 지정 
-        if (enemiesUpdated)
-        {
-            if (enemiesInRange.Count > 0)
-                SetClosestTarget();
-            else
-                _target = null;
+            Attack();
         }
     }
 
-    public void InitializeIndicatorTower()
+    protected virtual bool CanAttack() { return false; }
+    protected virtual void Attack() { }
+
+    public void SetupIndicatorTower()
     {
         enabled = false;
         GetComponent<Collider>().enabled = false;
-        _rangeIndicator.SetActive(true);
-        _rangeIndicator.transform.localScale = new Vector3(range, 0.2f, range);
+        UpdateRangeCircleColor();
+        ActiveRangeCircle();
     }
 
     private void DetectEnemiesInRange()
     {
-        _colliderInRange = Physics.OverlapSphere(transform.position, range/ 2, whatIsEnemy);
+        _colliderInRange = Physics.OverlapSphere(transform.position, range/ 2, _whatIsEnemy);
         enemiesInRange.Clear();
         foreach (Collider col in _colliderInRange)
         {
             enemiesInRange.Add(col.GetComponent<EnemyController>());
         }
     }
-    private void SetClosestTarget()
+
+    public void Upgrade()
     {
-        float minDistance = this.range + 1;
-        foreach (EnemyController enemy in enemiesInRange)
+        Tower[] upgradePrefabs = null;
+        switch (towerType)
         {
-            if (enemy != null)
-            {
-                float distance = Vector3.Distance(transform.position, enemy.transform.position);
-                if (distance < minDistance)
-                {
-                    minDistance = distance;
-                    _target = enemy.transform;
-                }
-            }
+            case TowerType.Normal:
+                upgradePrefabs = TowerManager.Instance.normalTowerVersions;
+                break;
+            case TowerType.Fire:
+                upgradePrefabs = TowerManager.Instance.fireTowerVersions;
+                break;
+            case TowerType.Electronic:
+                upgradePrefabs = TowerManager.Instance.electronicTowerVersions;
+                break;
+            case TowerType.Ice:
+                upgradePrefabs = TowerManager.Instance.iceTowerVersions;
+                break;
+            case TowerType.Magic:
+                upgradePrefabs = TowerManager.Instance.magicTowerVersions;
+                break;
+        }
+        
+        if (upgradePrefabs != null && level < upgradePrefabs.Length)
+        {
+            Vector3 position = transform.position;
+            Quaternion rotation = transform.rotation;
+            Destroy(gameObject);
+            Instantiate(upgradePrefabs[level], position, rotation);
+            UIManager.Instance.CloseTowerDetailsPanel();
+        }
+        else
+        {
+            Debug.Log("업그레이드 불가");
         }
     }
-    
+    public void ActiveRangeCircle() { rangeCircle.SetActive(true); }
+    public void DeActiveRangeCircle() { rangeCircle.SetActive(false); }
+    public void UpdateRangeCircleColor()
+    {
+        MeshRenderer meshRenderer = rangeCircle.GetComponentInChildren<MeshRenderer>();
+        Color color = Color.white;
+        switch (towerType)
+        {
+            case TowerType.Electronic:
+                color = Color.yellow;
+                break;
+            case TowerType.Fire:
+                color = Color.red;
+                break;
+            case TowerType.Ice:
+                color = Color.cyan;
+                break;
+            case TowerType.Normal:
+                color = Color.gray;
+                break;
+            case TowerType.Magic:
+                color = Color.magenta;
+                break;
+        }
+        meshRenderer.material.color = color;
+    }
     private void OnDrawGizmos()
     {
         // 스피어의 색상을 설정합니다.
